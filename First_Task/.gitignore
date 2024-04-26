@@ -1,0 +1,12 @@
+!*.cpp
+!*.hpp
+!*.h
+**/*.sln
+**/*.idb
+**/*.pdb
+**/x64
+**/x86
+**/*.vcxproj
+**/*.vcxproj.*
+
+**/.vs
