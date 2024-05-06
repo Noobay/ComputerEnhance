@@ -10,7 +10,6 @@ const uint8_t COMMAND_MOVE_MEMORY_TO_ACCUMULATOR = 0b1010000;
 const uint8_t COMMAND_MOVE_ACCUMULATOR_TO_MEMORY = 0b1010001;
 // 8 bits - [1011,(w)x,(reg)xxx]
 const uint8_t COMMAND_MOVE_IMMEDIATE_MEM_TO_REGISTER = 0b1011;
-
 const int BUFF_SIZE = 64;
 
 const int MAX_16BIT_DIGIT_COUNT = 5; // (worst case - uint16) 2^16 => 65536
@@ -45,7 +44,7 @@ int main(int argumentsCount, char** argumentsValue)
     if (pFile != 0)
     {
         int fileBytesCount = fread_s(fileData, BUFF_SIZE, 1, BUFF_SIZE, pFile);
-
+ 
         printf("bits 16\n");
 
         char registerName[3];
@@ -88,7 +87,7 @@ int main(int argumentsCount, char** argumentsValue)
                 uint8_t mode = (commandByte2 >> 6) & 0b11;
                 uint8_t reg_mem = commandByte2 & 0b111;
 
-                getRegisterOrMemoryText(registerOrMemoryAddrText, displacementText, fileData, fileBytesCount, byteOffset, 1, mode, reg_mem);
+                byteOffset = getRegisterOrMemoryText(registerOrMemoryAddrText, displacementText, fileData, fileBytesCount, byteOffset, 1, mode, reg_mem);
 
                 uint16_t data = fileData[byteOffset++];
 
@@ -112,7 +111,7 @@ int main(int argumentsCount, char** argumentsValue)
                 uint8_t reg_mem = commandByte2 & 0b111;
 
                 getRegName(registerName, reg, word);
-                getRegisterOrMemoryText(registerOrMemoryAddrText, displacementText, fileData, fileBytesCount, byteOffset, word, mode, reg_mem);
+                byteOffset = getRegisterOrMemoryText(registerOrMemoryAddrText, displacementText, fileData, fileBytesCount, byteOffset, word, mode, reg_mem);
 
                 if (direction == 1)
                     printf("mov %s, %s", registerName, registerOrMemoryAddrText);
