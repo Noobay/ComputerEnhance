@@ -80,7 +80,6 @@ int main(int argumentsCount, char** argumentsValue)
             memset(displacementText, '\0', MAX_DISPLACEMENT_TEXT_SIZE);
 
             uint8_t commandByte1 = fileData[byteOffset++];
-            printf("%i/%i - %u \n", byteOffset, fileBytesCount, commandByte1);
 	        if ((commandByte1 >> 1) == COMMAND_MOVE_MEMORY_TO_ACCUMULATOR)
             {
 	        	uint8_t word = commandByte1 & 0b1;
@@ -146,6 +145,11 @@ int main(int argumentsCount, char** argumentsValue)
                     case COMMAND2_ARITHMETIC_CMP_MASK:
                         opName = OP_CMP_NAME;
                         break;
+                    default:
+                        char errorText[128];
+                        snprintf(errorText, 128, "Unexpected operation code %u", arithmeticOpCode);
+                        throw std::exception(errorText);
+                        return 1;
                 }
 
                 int16_t data = fileData[byteOffset++];
@@ -215,7 +219,7 @@ int main(int argumentsCount, char** argumentsValue)
                     char errorText[128];
                     snprintf(errorText, 128, "Unexpected operation code %u", arithmeticOpCode);
                     throw std::exception(errorText);
-                    break;
+                    return 1;
                 }
 
                 uint16_t data = fileData[byteOffset++];
