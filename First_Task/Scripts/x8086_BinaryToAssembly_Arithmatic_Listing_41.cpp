@@ -11,6 +11,30 @@ const uint8_t COMMAND_MOVE_ACCUMULATOR_TO_MEMORY = 0b1010001;
 // 8 bits - [1011,(w)x,(reg)xxx]
 const uint8_t COMMAND_MOVE_IMMEDIATE_MEM_TO_REGISTER = 0b1011;
 
+const uint8_t COMMAND1_RETURN_FROM_CALL_COMMON = 0b0111;
+const uint8_t COMMAND2_JE  = 0b0100;
+const uint8_t COMMAND2_JL  = 0b1100;
+const uint8_t COMMAND2_JLE = 0b1110;
+const uint8_t COMMAND2_JB  = 0b0010;
+const uint8_t COMMAND2_JBE = 0b0110;
+const uint8_t COMMAND2_JP  = 0b1010;
+const uint8_t COMMAND2_JO  = 0b0000;
+const uint8_t COMMAND2_JS  = 0b1000;
+const uint8_t COMMAND2_JNE = 0b0101;
+const uint8_t COMMAND2_JNL = 0b1101;
+const uint8_t COMMAND2_JG  = 0b1111;
+const uint8_t COMMAND2_JNB = 0b0011;
+const uint8_t COMMAND2_JA  = 0b0111;
+const uint8_t COMMAND2_JNP = 0b1011;
+const uint8_t COMMAND2_JNO = 0b0001;
+const uint8_t COMMAND2_JNS  = 0b1001;
+
+const uint8_t COMMAND1_RETURN_FROM_CALL_SPECIAL = 0b111000;
+const uint8_t COMMAND2_LOOP   = 0b10;
+const uint8_t COMMAND2_LOOPZ  = 0b01;
+const uint8_t COMMAND2_LOOPNZ = 0b00;
+const uint8_t COMMAND2_JCXZ   = 0b11;
+
 const uint8_t COMMAND1_ARITHMETIC_PREFIX = 0b00;
 
 // 8 bits - [00, (op)XXX, 10, (w)x]
@@ -29,6 +53,28 @@ const uint8_t COMMAND2_ARITHMETIC_CMP_MASK = 0b111;
 const char OP_ADD_NAME[] = "add";
 const char OP_SUB_NAME[] = "sub";
 const char OP_CMP_NAME[] = "cmp";
+
+const char OP_JE_NAME[]  = "je";
+const char OP_JL_NAME[]  = "jl";
+const char OP_JLE_NAME[] = "jle";
+const char OP_JB_NAME[]  = "jb";
+const char OP_JBE_NAME[] = "jbe";
+const char OP_JP_NAME[]  = "jp";
+const char OP_JO_NAME[]  = "jo";
+const char OP_JS_NAME[]  = "js";
+const char OP_JNE_NAME[] = "jne";
+const char OP_JNL_NAME[] = "jnl";
+const char OP_JG_NAME[]  = "jg";
+const char OP_JNB_NAME[] = "jnb";
+const char OP_JA_NAME[]  = "ja";
+const char OP_JNP_NAME[] = "jnp";
+const char OP_JNO_NAME[] = "jno";
+const char OP_JNS_NAME[] = "jns";
+
+const char OP_LOOP_NAME[]   = "loop";
+const char OP_LOOPZ_NAME[]  = "loopz";
+const char OP_LOOPNZ_NAME[] = "loopnz";
+const char OP_JCXZ_NAME[]   = "jcxz";
 
 const char SIZE_DESCRIPTOR_BYTE[] = "byte";
 const char SIZE_DESCRIPTOR_WORD[] = "word";
@@ -80,7 +126,7 @@ int main(int argumentsCount, char** argumentsValue)
             memset(displacementText, '\0', MAX_DISPLACEMENT_TEXT_SIZE);
 
             uint8_t commandByte1 = fileData[byteOffset++];
-	        if ((commandByte1 >> 1) == COMMAND_MOVE_MEMORY_TO_ACCUMULATOR)
+            if ((commandByte1 >> 1) == COMMAND_MOVE_MEMORY_TO_ACCUMULATOR)
             {
 	        	uint8_t word = commandByte1 & 0b1;
                 uint16_t data = fileData[byteOffset++];
@@ -120,6 +166,30 @@ int main(int argumentsCount, char** argumentsValue)
                 }
 
                 printf("mov %s, %s %u\n", registerOrMemoryAddrText, sizeDescriptor, data);
+            }
+            else if ((commandByte1 >> 2) == COMMAND1_RETURN_FROM_CALL_SPECIAL)
+            {
+                uint8_t jmpOpCode = commandByte1 & 0b11;
+
+                const char* jmpOpName = OP_JE_NAME;
+                switch (jmpOpCode)
+                {
+                    case (COMMAND2_LOOP):
+                        jmpOpName = OP_LOOP_NAME;
+                        break;
+                    case (COMMAND2_LOOPZ):
+                        jmpOpName = OP_LOOPZ_NAME;
+                        break;
+                    case (COMMAND2_LOOPNZ):
+                        jmpOpName = OP_LOOPNZ_NAME;
+                        break;
+                    case (COMMAND2_JCXZ):
+                        jmpOpName = OP_JCXZ_NAME;
+                        break;
+                }
+
+                int8_t instructionPtrOffset = fileData[byteOffset++];
+                printf("%s %i\n", jmpOpName, instructionPtrOffset);
             }
             else if ((commandByte1 >> 2) == COMMAND1_ARITHMETIC_IMMEDIATE_TO_MEMORY)
             {
@@ -185,6 +255,67 @@ int main(int argumentsCount, char** argumentsValue)
                 else
                     printf("mov %s, %s\n", registerOrMemoryAddrText, registerName);
             }
+            else if ((commandByte1 >> 4) == COMMAND1_RETURN_FROM_CALL_COMMON)
+            {
+                uint8_t jmpOpCode = commandByte1 & 0b1111;
+
+                const char* jmpOpName = OP_JE_NAME;
+                switch (jmpOpCode)
+                {
+                    case (COMMAND2_JE):
+                        jmpOpName = OP_JE_NAME;
+                        break;
+                    case (COMMAND2_JL):
+                        jmpOpName = OP_JL_NAME;
+                        break;
+                    case (COMMAND2_JLE):
+                        jmpOpName = OP_JLE_NAME;
+                        break;
+                    case (COMMAND2_JB):
+                        jmpOpName = OP_JB_NAME;
+                        break;
+                    case (COMMAND2_JBE):
+                        jmpOpName = OP_JBE_NAME;
+                        break;
+                    case (COMMAND2_JP):
+                        jmpOpName = OP_JS_NAME;
+                        break;
+                    case (COMMAND2_JO):
+                        jmpOpName = OP_JO_NAME;
+                        break;
+                    case (COMMAND2_JS):
+                        jmpOpName = OP_JS_NAME;
+                        break;
+                    case (COMMAND2_JNE):
+                        jmpOpName = OP_JNE_NAME;
+                        break;
+                    case (COMMAND2_JNL):
+                        jmpOpName = OP_JNL_NAME;
+                        break;
+                    case (COMMAND2_JG):
+                        jmpOpName = OP_JG_NAME;
+                        break;
+                    case (COMMAND2_JNB):
+                        jmpOpName = OP_JNB_NAME;
+                        break;
+                    case (COMMAND2_JA):
+                        jmpOpName = OP_JA_NAME;
+                        break;
+                    case (COMMAND2_JNP):
+                        jmpOpName = OP_JNP_NAME;
+                        break;
+                    case (COMMAND2_JNO):
+                        jmpOpName = OP_JNO_NAME;
+                        break;
+                    case (COMMAND2_JNS):
+                        jmpOpName = OP_JNS_NAME;
+                        break;
+
+                }
+
+                int8_t instructionPtrOffset = fileData[byteOffset++];
+                printf("%s %i\n", jmpOpName, instructionPtrOffset);
+            } 
             else if ((commandByte1 >> 4) == COMMAND_MOVE_IMMEDIATE_MEM_TO_REGISTER)
             {
                 uint8_t word = (commandByte1 >> 3) & 0b1;
@@ -271,7 +402,7 @@ int main(int argumentsCount, char** argumentsValue)
                     printf("%s %s, %s", opName, registerOrMemoryAddrText, registerName);
 
                 printf("\n");
-            } 
+            }
         }
     }
 
